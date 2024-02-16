@@ -1,0 +1,15 @@
+ldap_starttls: true
+ldap_url: ldap://example.org:389
+ldap_dn: uid=username,dc=example.org,dc=org
+ldap_password: qwertyuiop12345
+ldap_search_base: ou=people,dc=example.org,dc=org
+ldap_search_filter: (&(objectClass=person)(mail=*@example.org))
+ldap_search_attributes:
+    name: cn
+    alias: uid
+    workplace: work_place # optional
+    business_unit: bu # optional
+    job_title: jt # optional
+sqlite_database_path: corporate_harbinger.db
+discord_webhook_url: https://discord.com/api/webhooks/123456789/ChangeMe019j9j0983i9ojjn09uakjkloiknsjn039J0J
+discord_bot_username: Bot Username
