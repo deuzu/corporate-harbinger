@@ -3,7 +3,9 @@ use std::error::Error;
 use reqwest::blocking::Client;
 use serde::Serialize;
 
-use crate::models::Employee;
+use crate::models::{Changes, Employee};
+
+use super::NotifyClient;
 
 #[derive(Clone, Debug, Serialize)]
 struct DiscordMessageBody {
@@ -31,26 +33,17 @@ struct DiscordMessageEmbedFooter {
     text: String,
 }
 
-pub struct DiscordClient<'a> {
-    webhook_url: &'a str,
-    bot_username: &'a str,
+pub struct DiscordClient {
+    webhook_url: String,
+    bot_username: String,
 }
 
-impl<'a> DiscordClient<'a> {
-    pub fn new(webhook_url: &'a str, bot_username: &'a str) -> Self {
+impl DiscordClient {
+    pub fn new(webhook_url: String, bot_username: String) -> Self {
         Self {
             webhook_url,
             bot_username,
         }
-    }
-
-    pub fn send(&self, newcomers: &Vec<Employee>, departures: &Vec<Employee>) -> Result<(), Box<dyn Error>> {
-        let body = self.build_message(newcomers, departures);
-        let serialized_body = serde_json::to_string(&body)?;
-
-        self.post_message(serialized_body)?;
-
-        Ok(())
     }
 
     fn build_message(
@@ -126,7 +119,7 @@ impl<'a> DiscordClient<'a> {
         }
 
         DiscordMessageBody {
-            username: String::from(self.bot_username),
+            username: self.bot_username.clone(),
             avatar_url: String::from("https://i.imgur.com/o7XM6SF.png"),
             content,
             embeds,
@@ -140,10 +133,7 @@ impl<'a> DiscordClient<'a> {
         headers.insert("Content-Type", "application/json".parse().unwrap());
 
         let request = client
-            .request(
-                reqwest::Method::POST,
-                self.webhook_url
-            )
+            .request(reqwest::Method::POST, &self.webhook_url)
             .headers(headers)
             .body(payload);
 
@@ -155,6 +145,17 @@ impl<'a> DiscordClient<'a> {
                 response.status().as_str()
             )));
         }
+
+        Ok(())
+    }
+}
+
+impl NotifyClient for DiscordClient {
+    fn send(&self, changes: &Changes) -> Result<(), Box<dyn Error>> {
+        let body = self.build_message(&changes.newcomers, &changes.departures);
+        let serialized_body = serde_json::to_string(&body)?;
+
+        self.post_message(serialized_body)?;
 
         Ok(())
     }

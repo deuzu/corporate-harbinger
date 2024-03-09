@@ -46,18 +46,19 @@ The system has a 3 steps process:
 wget https://github.com/deuzu/corporate-harbinger/releases/download/v1.0.0-alpha/corporate-harbinger-x86_64-unknown-linux-gnu
 mv corporate-harbinger-x86_64-unknown-linux-gnu /usr/bin/local/corporate-harbinger
 
-# Create and modify the config file
+# Execute using config file
 wget https://raw.githubusercontent.com/deuzu/corporate-harbinger/main/corporate_harbinger.yaml.dist
-mv corporate_harbinger.yaml.dist ~/.config/corporate_harbinger.yaml
+mv corporate_harbinger.yaml.dist /whatever/floats/your/boat/.config/corporate_harbinger.yaml
+CH_CONFIG_FILE_PATH=/whatever/floats/your/boat/.config/corporate_harbinger.yaml corporate-harbinger
 
-# Execute
-RUST_LOG=info CH_CONFIG_FILE_PATH=~/.config/corporate_harbinger.yaml corporate-harbinger
+# Execute using environment variables
+CH_LDAP_STARTTLS=true CH_LDAP_URL=ldap://example.org:389 [...] corporate-harbinger
 ```
 
 Cron
 
 ```cron
-0 9 * * * RUST_LOG=info CH_CONFIG_FILE_PATH=~/.config/corporate_harbinger.yaml corporate-harbinger >> /var/log/corporate_harbinger.log 2>&1
+0 9 * * * CH_CONFIG_FILE_PATH=/whatever/floats/your/boat/.config/corporate_harbinger.yaml corporate-harbinger >> /var/log/corporate_harbinger.log 2>&1
 ```
 
 [Latest release](https://github.com/deuzu/corporate-harbinger/releases/latest)

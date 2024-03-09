@@ -1,24 +1,32 @@
 use std::error::Error;
 
-use crate::{provider::WorkforceProvider, repository::WorkforceRepository};
+use crate::{models::Employee, repository::workforce_read_repository::WorkforceReadRepository};
 
-pub struct Collector<'a> {
-    workforce_provider: &'a mut WorkforceProvider<'a>,
-    workforce_repository: &'a WorkforceRepository<'a>,
+use self::workforce_provider::WorkforceProvider;
+
+pub mod ldap_client;
+pub mod workforce_provider;
+
+pub struct Collector {
+    workforce_provider: Box<WorkforceProvider>,
+    workforce_repository: Box<WorkforceReadRepository>,
 }
 
-impl <'a> Collector<'a> {
-    pub fn new(workforce_provider: &'a mut WorkforceProvider<'a>, workforce_repository: &'a WorkforceRepository) -> Self {
+impl Collector {
+    pub fn new(
+        workforce_provider: Box<WorkforceProvider>,
+        workforce_repository: Box<WorkforceReadRepository>,
+    ) -> Self {
         Self {
             workforce_provider,
-            workforce_repository
+            workforce_repository,
         }
     }
 
-    pub fn collect(&mut self) -> Result<(), Box<dyn Error>> {
-        let snapshot = self.workforce_provider.provide()?;
-        self.workforce_repository.save(snapshot)?;
+    pub fn collect(&mut self) -> Result<(Vec<Employee>, Vec<Employee>), Box<dyn Error>> {
+        let previous_snapshot = self.workforce_repository.find_snapshot()?;
+        let current_snapshot = self.workforce_provider.provide()?;
 
-        Ok(())
+        Ok((previous_snapshot, current_snapshot))
     }
 }

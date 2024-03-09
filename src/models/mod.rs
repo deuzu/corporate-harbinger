@@ -1,10 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-pub struct WorkforceSnapshot {
-    pub source: String,
-    pub employees: String,
-}
-
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Employee {
     pub name: String,
@@ -14,7 +9,8 @@ pub struct Employee {
     pub job_title: Option<String>,
 }
 
-pub struct WorkforceNotification {
+#[derive(Debug)]
+pub struct Changes {
     pub newcomers: Vec<Employee>,
     pub departures: Vec<Employee>,
 }

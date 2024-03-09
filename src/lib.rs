@@ -1,18 +1,17 @@
 use std::{env, error::Error};
 
 use config::Config as Cfg;
-use provider::ProviderSearchAttributes;
 use serde::Deserialize;
 
-pub mod client;
 pub mod collector;
+pub mod changes_detector;
 pub mod models;
-pub mod notifier;
-pub mod provider;
+pub mod notify;
 pub mod repository;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
+    pub dry_run: bool,
     pub ldap_starttls: bool,
     pub ldap_url: String,
     pub ldap_dn: String,
@@ -29,7 +28,9 @@ impl Config {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         let file_path = env::var("CH_CONFIG_FILE_PATH")?;
         let settings = Cfg::builder()
+            .set_default("dry_run", false)?
             .add_source(config::File::with_name(&file_path))
+            .add_source(config::Environment::with_prefix("CH").try_parsing(true))
             .build()?;
 
         let config = settings.try_deserialize::<Self>()?;
@@ -45,16 +46,4 @@ pub struct ConfigProviderSearchAttributes {
     pub workplace: Option<String>,
     pub business_unit: Option<String>,
     pub job_title: Option<String>,
-}
-
-impl Into<ProviderSearchAttributes> for ConfigProviderSearchAttributes {
-    fn into(self) -> ProviderSearchAttributes {
-        ProviderSearchAttributes {
-            name: self.name,
-            alias: self.alias,
-            workplace: self.workplace,
-            business_unit: self.business_unit,
-            job_title: self.job_title,
-        }
-    }
 }

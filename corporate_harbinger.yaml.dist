@@ -1,3 +1,4 @@
+dry_run: false
 ldap_starttls: true
 ldap_url: ldap://example.org:389
 ldap_dn: uid=username,dc=example.org,dc=org

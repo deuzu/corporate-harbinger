@@ -1,55 +1,24 @@
 use std::error::Error;
 
 use ldap3::{Scope, SearchEntry};
-use serde::Deserialize;
 
-use crate::{
-    client::LdapClient,
-    models::{Employee, WorkforceSnapshot},
-};
+use crate::{models::Employee, ConfigProviderSearchAttributes};
 
-pub struct WorkforceProvider<'a> {
-    ldap_base: &'a str,
-    ldap_filter: &'a str,
-    ldap_search_attributes: &'a ProviderSearchAttributes,
-    ldap_client: &'a mut LdapClient<'a>,
+use super::ldap_client::LdapClient;
+
+pub struct WorkforceProvider {
+    ldap_base: String,
+    ldap_filter: String,
+    ldap_search_attributes: ConfigProviderSearchAttributes,
+    ldap_client: Box<LdapClient>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct ProviderSearchAttributes {
-    pub name: String,
-    pub alias: String,
-    pub workplace: Option<String>,
-    pub business_unit: Option<String>,
-    pub job_title: Option<String>,
-}
-
-impl ProviderSearchAttributes {
-    fn get_attributes(&self) -> Vec<String> {
-        let mut attributes = Vec::from([self.name.clone(), self.alias.clone()]);
-
-        if let Some(w) = &self.workplace {
-            attributes.push(w.to_string());
-        }
-
-        if let Some(bu) = &self.business_unit {
-            attributes.push(bu.to_string());
-        }
-
-        if let Some(jt) = &self.job_title {
-            attributes.push(jt.to_string());
-        }
-
-        attributes
-    }
-}
-
-impl<'a> WorkforceProvider<'a> {
+impl WorkforceProvider {
     pub fn new(
-        ldap_base: &'a str,
-        ldap_filter: &'a str,
-        ldap_search_attributes: &'a ProviderSearchAttributes,
-        ldap_client: &'a mut LdapClient<'a>,
+        ldap_base: String,
+        ldap_filter: String,
+        ldap_search_attributes: ConfigProviderSearchAttributes,
+        ldap_client: Box<LdapClient>,
     ) -> Self {
         Self {
             ldap_base,
@@ -59,14 +28,14 @@ impl<'a> WorkforceProvider<'a> {
         }
     }
 
-    pub fn provide(&mut self) -> Result<WorkforceSnapshot, Box<dyn Error>> {
+    pub fn provide(&mut self) -> Result<Vec<Employee>, Box<dyn Error>> {
         let connection = self.ldap_client.get_connection()?;
         let (rs, _res) = connection
             .search(
-                self.ldap_base,
+                &self.ldap_base,
                 Scope::Subtree,
-                self.ldap_filter,
-                self.ldap_search_attributes.get_attributes(),
+                &self.ldap_filter,
+                Self::get_attributes(&self.ldap_search_attributes),
             )?
             .success()?;
 
@@ -110,9 +79,27 @@ impl<'a> WorkforceProvider<'a> {
 
         self.ldap_client.close_connection()?;
 
-        Ok(WorkforceSnapshot {
-            source: String::from("ldap-v1"),
-            employees: serde_json::to_string(&employees)?,
-        })
+        Ok(employees)
+    }
+
+    fn get_attributes(ldap_search_attributes: &ConfigProviderSearchAttributes) -> Vec<String> {
+        let mut attributes = Vec::from([
+            ldap_search_attributes.name.clone(),
+            ldap_search_attributes.alias.clone(),
+        ]);
+
+        if let Some(w) = &ldap_search_attributes.workplace {
+            attributes.push(w.to_string());
+        }
+
+        if let Some(bu) = &ldap_search_attributes.business_unit {
+            attributes.push(bu.to_string());
+        }
+
+        if let Some(jt) = &ldap_search_attributes.job_title {
+            attributes.push(jt.to_string());
+        }
+
+        attributes
     }
 }
