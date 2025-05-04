@@ -4,9 +4,9 @@ use crate::models::Changes;
 
 use self::notify::NotifyClient;
 
-pub mod notify;
 pub mod discord;
 pub mod dryrun_notify;
+pub mod notify;
 
 pub struct Notifier {
     notify_client: Box<dyn NotifyClient>,
@@ -14,9 +14,7 @@ pub struct Notifier {
 
 impl Notifier {
     pub fn new(notify_client: Box<dyn NotifyClient>) -> Self {
-        Self {
-            notify_client,
-        }
+        Self { notify_client }
     }
 
     pub fn notify(&self, changes: &Changes) -> Result<(), Box<dyn Error>> {

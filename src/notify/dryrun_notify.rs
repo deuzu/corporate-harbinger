@@ -15,14 +15,14 @@ impl DryRunNotifyClient {
 impl NotifyClient for DryRunNotifyClient {
     fn send(&self, changes: &Changes) -> Result<(), Box<dyn Error>> {
         let fmt_employee = |n: Employee| {
-                format!(
-                    "{} ({} - {} - {})",
-                    n.name,
-                    n.workplace.or(Some(String::from("None"))).unwrap(),
-                    n.business_unit.or(Some(String::from("None"))).unwrap(),
-                    n.job_title.or(Some(String::from("None"))).unwrap(),
-                )
-            };
+            format!(
+                "{} ({} - {} - {})",
+                n.name,
+                n.workplace.or(Some(String::from("None"))).unwrap(),
+                n.business_unit.or(Some(String::from("None"))).unwrap(),
+                n.job_title.or(Some(String::from("None"))).unwrap(),
+            )
+        };
         let newcomers: Vec<String> = changes
             .newcomers
             .clone()

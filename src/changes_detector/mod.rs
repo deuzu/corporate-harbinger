@@ -2,15 +2,18 @@ use std::error::Error;
 
 use crate::models::{Changes, Employee};
 
-pub struct ChangesDetector {
-}
+pub struct ChangesDetector {}
 
 impl ChangesDetector {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn detect(&self, previous_snapshot: &Vec<Employee>, current_snapshot: &Vec<Employee>) -> Result<Changes, Box<dyn Error>> {
+    pub fn detect(
+        &self,
+        previous_snapshot: &Vec<Employee>,
+        current_snapshot: &Vec<Employee>,
+    ) -> Result<Changes, Box<dyn Error>> {
         let newcomers: Vec<Employee> = current_snapshot
             .clone()
             .into_iter()
