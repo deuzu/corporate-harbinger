@@ -44,7 +44,8 @@ fn main() {
         config.ldap_search_attributes,
         ldap_client,
     ));
-    let collector_workforce_repository = Box::new(WorkforceReadRepository::new(collector_sql_client));
+    let collector_workforce_repository =
+        Box::new(WorkforceReadRepository::new(collector_sql_client));
     let notifier_client: Box<dyn NotifyClient> = match &config.dry_run {
         false => Box::new(DiscordClient::new(
             config.discord_webhook_url,
@@ -57,10 +58,7 @@ fn main() {
         true => Box::new(DryRunWorkforceSaveRepository::new()),
     };
 
-    let mut collector = Collector::new(
-        workforce_provider,
-        collector_workforce_repository,
-    );
+    let mut collector = Collector::new(workforce_provider, collector_workforce_repository);
     let changes_detector = ChangesDetector::new();
     let notifier = Notifier::new(notifier_client);
 

@@ -3,8 +3,8 @@ use std::{env, error::Error};
 use config::Config as Cfg;
 use serde::Deserialize;
 
-pub mod collector;
 pub mod changes_detector;
+pub mod collector;
 pub mod models;
 pub mod notify;
 pub mod repository;
